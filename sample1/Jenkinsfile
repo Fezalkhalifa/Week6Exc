@@ -36,7 +36,9 @@ pipeline {
                         }
                     }
                     else{
-                        echo "Code coverage skipped because of non main branch"
+                          steps {
+                            echo "Code coverage skipped because of non main branch"
+                          }
                     }
             }
         
@@ -54,7 +56,9 @@ pipeline {
                                 '''
                         }
                   }else{
-                    echo "Unit test skipped because of main branch" 
+                        steps {
+                            echo "Unit test skipped because of main branch" 
+                        }
                   }
             }
                     
@@ -72,7 +76,9 @@ pipeline {
                         }
                  }
                  else{
-                    echo "Static code analysis skipped because of main branch" 
+                       steps {
+                         echo "Static code analysis skipped because of main branch" 
+                       }
                   }
              }
        }
