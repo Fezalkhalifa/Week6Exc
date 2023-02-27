@@ -19,7 +19,7 @@ podTemplate(containers: [
                       if (env.BRANCH_NAME != "main") {
                         sh '''
                         pwd
-                        chmod + x sample1
+                        chmod +x sample1
                         cd sample1
                         pwd
                         chmod +x gradlew
@@ -32,10 +32,10 @@ podTemplate(containers: [
                      if (env.BRANCH_NAME == "main") {
                      sh '''
                		 pwd
-                          chmod + x sample1
+                          chmod +x sample1
                           cd sample1
                           pwd
-                          chmod + x gradlew
+                          chmod +x gradlew
                 	    ./gradlew jacocoTestCoverageVerification
                         ./gradlew jacocoTestReport
                         '''
