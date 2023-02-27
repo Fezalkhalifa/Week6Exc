@@ -1,75 +1,57 @@
 pipeline {
-     agent any
-     triggers {
-          pollSCM('* * * * *')
-     }
-     stages {
-         stage("print branch name") {
+    agent any
+    triggers {
+        pollSCM('* * * * *')
+   }
+    stages {
+        stage("print branch name") {
             steps {
              echo "I am the ${env.BRANCH_NAME} branch"
             }
-          }
-          stage("Compile") {
-                   if (env.BRANCH_NAME != "main") {
-                        steps {
-                                sh '''
-                                 pwd
-                                 chmod + x sample1
-                                 cd sample1
-                                 pwd
-                                 chmod + x gradlew
-                                ./gradlew compileJava
-                                '''
-                        }
-                    }else{
-                        steps {
-                            echo "Compile stage skipped because of main branch current branch ${env.BRANCH_NAME} "
-                          } 
+         }
+        stage('Code coverage') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'main') {
+                        sh '''
+                        pwd
+                        chmod + x sample1
+                        cd sample1
+                        pwd
+                        chmod + x gradlew
+                       ./gradlew jacocoTestReport
+                       '''
+                       sh '''
+                        pwd
+                        chmod + x sample1
+                        cd sample1
+                        pwd
+                        chmod + x gradlew
+                       ./gradlew jacocoTestCoverageVerification
+                       '''
+                    }  else {
+                        sh "echo 'Code coverage skipped because of non main branch'"
                     }
-          }
-          stage("Unit test") {
-                   if (env.BRANCH_NAME != "main") {
-                        steps {
-                                sh '''
-                                 pwd
-                                 chmod + x sample1
-                                 cd sample1
-                                 pwd
-                                 chmod + x gradlew
-                                ./gradlew test
-                                '''
-                        }
-                   }else{
-                    steps {
-                        echo "Unit test stage skipped because of main branch current branch ${env.BRANCH_NAME} "
-                      } 
-                   }
-          }
-          stage("Code coverage") {
-                   if (env.BRANCH_NAME == "main") {
-                        steps {
-                                sh '''
-                                 pwd
-                                 chmod + x sample1
-                                 cd sample1
-                                 pwd
-                                 chmod + x gradlew
-                                ./gradlew jacocoTestReport
-                                '''
-                                sh '''
-                                 pwd
-                                 chmod + x sample1
-                                 cd sample1
-                                 pwd
-                                 chmod + x gradlew
-                                ./gradlew jacocoTestCoverageVerification
-                                '''
-                        }
-                    }else{
-                            steps {
-                                echo "Unit test stage skipped because of main branch current branch ${env.BRANCH_NAME} "
-                              } 
-                        }
-          }
-       }
+                    }
+            }
+        }
+        stage('Unit test') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME != 'main') {
+                        sh '''
+                        pwd
+                        chmod + x sample1
+                        cd sample1
+                        pwd
+                        chmod + x gradlew
+                       ./gradlew test
+                       '''
+                    }  else {
+                        sh "echo 'Unit test skipped because of main branch'"
+                    }
+                    }
+            }
+        }
+    }
 }
