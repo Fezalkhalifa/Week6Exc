@@ -10,8 +10,10 @@ pipeline {
                 echo "I am the ${env.BRANCH_NAME} branch"
             }
          
-         if (env.BRANCH_NAME == "main") {
-                   stage("Code coverage") {
+         
+          stage("Code coverage") {
+
+                    if (env.BRANCH_NAME == "main") {
                         steps {
                                 sh '''
                                  pwd
@@ -31,10 +33,14 @@ pipeline {
                                 '''
                         }
                     }
-         }
-         else
-         {
-                   stage("Unit test") {
+                    else{
+                        echo "Code coverage skipped because of non main branch"
+                    }
+            }
+        
+        
+            stage("Unit test") {
+                  if (env.BRANCH_NAME != "main") {
                         steps {
                                 sh '''
                                  pwd
@@ -45,9 +51,13 @@ pipeline {
                                 ./gradlew test
                                 '''
                         }
-                    }
+                  }else{
+                    echo "Unit test skipped because of main branch" 
+                  }
+            }
                     
-                    stage("Static code analysis") {
+            stage("Static code analysis") {
+                 if (env.BRANCH_NAME != "main") {
                         steps {
                                 sh '''
                                  pwd
@@ -58,8 +68,12 @@ pipeline {
                                 ./gradlew checkstyleMain
                                 '''
                         }
-                    }
-        }
+                 }
+                 else{
+                    echo "Static code analysis skipped because of main branch" 
+                  }
+             }
+       }
      
      }
 }
