@@ -10,66 +10,56 @@ pipeline {
   if (env.BRANCH_NAME == "main") {
     stage("Code coverage") {
       steps {
-        sh ''
-        '
+        sh '''
         pwd
         chmod + x sample1
         cd sample1
         pwd
         chmod + x gradlew
-          . / gradlew jacocoTestReport ''
-        '
-        sh ''
-        '
+          . / gradlew jacocoTestReport '''
+        sh '''
         chmod + x gradlew
-          . / gradlew jacocoTestCoverageVerification ''
-        '
+          . / gradlew jacocoTestCoverageVerification '''
       }
     }
   } else {
     stages {
       stage("Compile") {
         steps {
-          sh ''
-          '
+          sh '''
           pwd
           chmod + x sample1
           cd sample1
           pwd
           chmod + x gradlew
-            . / gradlew test ''
-          '
+            . / gradlew test '''
         }
       }
       stage("Unit test") {
         steps {
-          sh ''
-          '
+          sh '''
           pwd
           chmod + x sample1
           cd sample1
           pwd
           chmod + x gradlew
-            . / gradlew test ''
-          '
+            . / gradlew test '''
         }
       }
       stage("Static code analysis") {
         steps {
-          sh ''
-          '
+          sh '''
           pwd
           chmod + x sample1
           cd sample1
           pwd
           chmod + x gradlew
-            . / gradlew checkstyleMain ''
-          '
+            . / gradlew checkstyleMain '''
 
           publishHTML(target: [
             reportDir: 'sample1/build/reports/tests/test',
             reportFiles: 'index.html',
-            reportName: "JaCoCo Report"
+            reportName: "JaCoCo Report multibranch"
           ])
         }
 
