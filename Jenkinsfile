@@ -6,6 +6,7 @@ pipeline {
      stages {
           stage("Compile") {
                steps {
+                     cd sample1
                      sh "./gradlew compileJava"  
                }
           }
