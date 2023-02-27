@@ -6,18 +6,34 @@ pipeline {
      stages {
           stage("Compile") {
                steps {
-                    sh "./gradlew compileJava"
+                    sh '''
+                    chmod +x gradlew
+                    ./gradlew compileJava
+                    '''
                }
           } 
+          stage("Package") {
+               steps {
+                    sh '''
+                    chmod +x gradlew
+                    ./gradlew build'''
+               }
+          }
           stage("Unit test") {
                steps {
-                    sh "./gradlew test"
+                    sh '''
+                    chmod +x gradlew
+                    ./gradlew test'''
                }
           }
           stage("Code coverage") {
                steps {
-                    sh "./gradlew jacocoTestReport"
-                    sh "./gradlew jacocoTestCoverageVerification"
+                    sh '''
+                    chmod +x gradlew
+                    ./gradlew jacocoTestReport'''
+                    sh '''
+                    chmod +x gradlew
+                    ./gradlew jacocoTestCoverageVerification'''
                }
           }
           stage("Static code analysis") {
@@ -25,11 +41,7 @@ pipeline {
                     sh "./gradlew checkstyleMain"
                }
           }
-          stage("Package") {
-               steps {
-                    sh "./gradlew build"
-               }
-          }
+          
 
           stage("Docker build") {
                steps {
