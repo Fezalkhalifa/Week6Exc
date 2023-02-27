@@ -48,7 +48,7 @@ pipeline {
                        ./gradlew test
                        '''
                     }  else {
-                        sh "echo 'Unit test skipped because of main branch'"
+                         sh "echo 'Unit test skipped because of main branch'"
                     }
                     }
             }
