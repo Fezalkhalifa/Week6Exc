@@ -1,73 +1,81 @@
 pipeline {
-     agent any
-     triggers {
-          pollSCM('* * * * *')
-     }
-     
-     stage('print branch name'){
-      echo "I am the ${env.BRANCH_NAME} branch"
-     }
-     if(env.BRANCH_NAME == "main"){
-      stage("Code coverage") {
-               steps {
-                    sh '''
-                    pwd
-                    chmod +x sample1
-                    cd sample1
-                    pwd
-                    chmod +x gradlew
-                    ./gradlew jacocoTestReport'''
-                    sh '''
-                    chmod +x gradlew
-                    ./gradlew jacocoTestCoverageVerification'''
-               }
-          }
-     }
-     else{
-     stages {
-          stage("Compile") {
-               steps {
-                    sh '''
-                    pwd
-                    chmod +x sample1
-                    cd sample1
-                    pwd
-                    chmod +x gradlew
-                    ./gradlew test
-                    '''
-               }
-          } 
-          stage("Unit test") {
-               steps {
-                    sh '''
-                    pwd
-                    chmod +x sample1
-                    cd sample1
-                    pwd
-                    chmod +x gradlew
-                    ./gradlew test'''
-               }
-          }
-          stage("Static code analysis") {
-               steps {
-                    sh '''
-                     pwd
-                    chmod +x sample1
-                    cd sample1
-                    pwd
-                    chmod +x gradlew
-                    ./gradlew checkstyleMain'''
-                    
-                     publishHTML (target: [
-                        reportDir: 'sample1/build/reports/tests/test',
-                        reportFiles: 'index.html',
-                        reportName: "JaCoCo Report"
-                    ])     
-              }
-                  
-          }
-         
-     }
+  agent any
+  triggers {
+    pollSCM('* * * * *')
+  }
 
-     }
+  stage("print branch name") {
+    echo "I am the ${env.BRANCH_NAME} branch"
+  }
+  if (env.BRANCH_NAME == "main") {
+    stage("Code coverage") {
+      steps {
+        sh ''
+        '
+        pwd
+        chmod + x sample1
+        cd sample1
+        pwd
+        chmod + x gradlew
+          . / gradlew jacocoTestReport ''
+        '
+        sh ''
+        '
+        chmod + x gradlew
+          . / gradlew jacocoTestCoverageVerification ''
+        '
+      }
+    }
+  } else {
+    stages {
+      stage("Compile") {
+        steps {
+          sh ''
+          '
+          pwd
+          chmod + x sample1
+          cd sample1
+          pwd
+          chmod + x gradlew
+            . / gradlew test ''
+          '
+        }
+      }
+      stage("Unit test") {
+        steps {
+          sh ''
+          '
+          pwd
+          chmod + x sample1
+          cd sample1
+          pwd
+          chmod + x gradlew
+            . / gradlew test ''
+          '
+        }
+      }
+      stage("Static code analysis") {
+        steps {
+          sh ''
+          '
+          pwd
+          chmod + x sample1
+          cd sample1
+          pwd
+          chmod + x gradlew
+            . / gradlew checkstyleMain ''
+          '
+
+          publishHTML(target: [
+            reportDir: 'sample1/build/reports/tests/test',
+            reportFiles: 'index.html',
+            reportName: "JaCoCo Report"
+          ])
+        }
+
+      }
+
+    }
+
+  }
 }
