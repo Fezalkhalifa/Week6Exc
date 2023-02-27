@@ -7,6 +7,7 @@ pipeline {
           stage("Compile") {
                steps {
                     sh '''
+                    pwd
                     chmod +x gradlew
                     ./gradlew compileJava
                     '''
@@ -15,6 +16,7 @@ pipeline {
           stage("Package") {
                steps {
                     sh '''
+                    pwd
                     chmod +x gradlew
                     ./gradlew build'''
                }
@@ -22,6 +24,7 @@ pipeline {
           stage("Unit test") {
                steps {
                     sh '''
+                    pwd
                     chmod +x gradlew
                     ./gradlew test'''
                }
@@ -29,6 +32,7 @@ pipeline {
           stage("Code coverage") {
                steps {
                     sh '''
+                    pwd
                     chmod +x gradlew
                     ./gradlew jacocoTestReport'''
                     sh '''
