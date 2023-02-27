@@ -3,42 +3,12 @@ pipeline {
      triggers {
           pollSCM('* * * * *')
      }
-     stages {
-          stage("Compile") {
-               steps {
-                    sh '''
-                    pwd
-                    chmod +x sample1
-                    cd sample1
-                    pwd
-                    chmod +x gradlew
-                    ./gradlew compileJava
-                    '''
-               }
-          } 
-          stage("Package") {
-               steps {
-                    sh '''
-                    pwd
-                    chmod +x sample1
-                    cd sample1
-                    pwd
-                    chmod +x gradlew
-                    ./gradlew build'''
-               }
-          }
-          stage("Unit test") {
-               steps {
-                    sh '''
-                    pwd
-                    chmod +x sample1
-                    cd sample1
-                    pwd
-                    chmod +x gradlew
-                    ./gradlew test'''
-               }
-          }
-          stage("Code coverage") {
+     
+     stage('print branch name'){
+      echo "I am the ${env.BRANCH_NAME} branch"
+     }
+     if(env.BRANCH_NAME == "main"){
+      stage("Code coverage") {
                steps {
                     sh '''
                     pwd
@@ -52,67 +22,52 @@ pipeline {
                     ./gradlew jacocoTestCoverageVerification'''
                }
           }
-        //  stage("Static code analysis") {
-          //     steps {
-            //        sh "./gradlew checkstyleMain"
-              // }
-        //  }
-          
-
-          stage("Docker build") {
+     }
+     else{
+     stages {
+          stage("Compile") {
                steps {
-                    sh "docker build -t leszko/calculator:${BUILD_TIMESTAMP} ."
+                    sh '''
+                    pwd
+                    chmod +x sample1
+                    cd sample1
+                    pwd
+                    chmod +x gradlew
+                    ./gradlew test
+                    '''
+               }
+          } 
+          stage("Unit test") {
+               steps {
+                    sh '''
+                    pwd
+                    chmod +x sample1
+                    cd sample1
+                    pwd
+                    chmod +x gradlew
+                    ./gradlew test'''
                }
           }
-
-          stage("Docker login") {
+          stage("Static code analysis") {
                steps {
-                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker-hub-credentials',
-                               usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-                         sh "docker login --username $USERNAME --password $PASSWORD"
-                    }
-               }
-          }
-
-          stage("Docker push") {
-               steps {
-                    sh "docker push leszko/calculator:${BUILD_TIMESTAMP}"
-               }
-          }
-
-          stage("Update version") {
-               steps {
-                    sh "sed  -i 's/{{VERSION}}/${BUILD_TIMESTAMP}/g' calculator.yaml"
-               }
-          }
-          
-          stage("Deploy to staging") {
-               steps {
-                    sh "kubectl config use-context staging"
-                    sh "kubectl apply -f hazelcast.yaml"
-                    sh "kubectl apply -f calculator.yaml"
-               }
-          }
-
-          stage("Acceptance test") {
-               steps {
-                    sleep 60
-                    sh "chmod +x acceptance-test.sh && ./acceptance-test.sh"
-               }
-          }
-
-          stage("Release") {
-               steps {
-                    sh "kubectl config use-context production"
-                    sh "kubectl apply -f hazelcast.yaml"
-                    sh "kubectl apply -f calculator.yaml"
-               }
-          }
-          stage("Smoke test") {
-              steps {
-                  sleep 60
-                  sh "chmod +x smoke-test.sh && ./smoke-test.sh"
+                    sh '''
+                     pwd
+                    chmod +x sample1
+                    cd sample1
+                    pwd
+                    chmod +x gradlew
+                    ./gradlew checkstyleMain'''
+                    
+                     publishHTML (target: [
+                        reportDir: 'sample1/build/reports/tests/test',
+                        reportFiles: 'index.html',
+                        reportName: "JaCoCo Report"
+                    ])     
               }
+                  
           }
+         
+     }
+
      }
 }
