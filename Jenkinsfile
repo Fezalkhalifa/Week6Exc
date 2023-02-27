@@ -17,7 +17,14 @@ podTemplate(containers: [
             echo "My CC branch is: ${env.CHANGE_BRANCH}"
             if (env.BRANCH_NAME == "feature") {
               echo "I am the ${env.BRANCH_NAME} branch"
-            }
+	    }else{
+	     sh '''
+                    cd sample1
+                    chmod +x gradlew
+                    ./gradlew test
+                    '''
+	    
+	    }
           }
         }
       }   
