@@ -10,7 +10,7 @@ pipeline {
                     pwd
                     chmod +x sample1
                     cd sample1
-                    cd sample1
+                    pwd
                     chmod +x gradlew
                     ./gradlew compileJava
                     '''
@@ -22,7 +22,7 @@ pipeline {
                     pwd
                     chmod +x sample1
                     cd sample1
-                    cd sample1
+                    pwd
                     chmod +x gradlew
                     ./gradlew build'''
                }
@@ -33,6 +33,7 @@ pipeline {
                     pwd
                     chmod +x sample1
                     cd sample1
+                    pwd
                     chmod +x gradlew
                     ./gradlew test'''
                }
@@ -43,6 +44,7 @@ pipeline {
                     pwd
                     chmod +x sample1
                     cd sample1
+                    pwd
                     chmod +x gradlew
                     ./gradlew jacocoTestReport'''
                     sh '''
