@@ -41,6 +41,7 @@ podTemplate(yaml: '''
       container('gradle') {
          stage('Build a gradle project') {
           sh '''
+           pwd
            chmod +x sample1
            cd sample1
            pwd
