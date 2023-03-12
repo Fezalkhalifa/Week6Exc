@@ -1,68 +1,128 @@
-
-pipeline {
-    agent any
-    triggers {
-        pollSCM('* * * * *')
-   }
-    stages {
-        stage("print branch name") {
-            steps {
-             echo "I am the ${env.BRANCH_NAME} branch"
+podTemplate(yaml: '''
+    apiVersion: v1
+    kind: Pod
+    spec:
+      containers:
+      - name: gradle
+        image: gradle:6.3-jdk14
+        command:
+        - sleep
+        args:
+        - 99d
+        volumeMounts:
+        - name: shared-storage
+          mountPath: /mnt
+      - name: kaniko
+        image: gcr.io/kaniko-project/executor:debug
+        command:
+        - sleep
+        args:
+        - 9999999
+        volumeMounts:
+        - name: shared-storage
+          mountPath: /mnt
+        - name: kaniko-secret
+          mountPath: /kaniko/.docker
+      restartPolicy: Never
+      volumes:
+      - name: shared-storage
+        persistentVolumeClaim:
+          claimName: jenkins-pv-claim
+      - name: kaniko-secret
+        secret:
+            secretName: dockercred
+            items:
+            - key: .dockerconfigjson
+              path: config.json
+''') {
+  node(POD_LABEL) {
+    stage('Build a gradle project') {
+      container('gradle') {
+        stage('Unit test') {
+          if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
+            echo "I am the ${env.BRANCH_NAME} branch"
+            try {
+              sh '''
+                      pwd
+                      chmod +x sample1
+                      cd sample1
+                      chmod +x gradlew
+                      ./gradlew test
+                       '''
             }
+         catch (Exception E) {
+              echo 'Failure detected'
          }
+          }
+        }
         stage('Code coverage') {
-            steps {
-                script {
+            echo "I am the ${env.BRANCH_NAME} branch"
+          if (env.BRANCH_NAME == 'master') {
+            try {
+              sh '''
+                         pwd
+                         chmod +x sample1
+                         cd sample1
+                         chmod +x gradlew
+                         ./gradlew jacocoTestCoverageVerification
+                         ./gradlew jacocoTestReport '''
+            }
 
-                    if (env.BRANCH_NAME == 'main'||env.BRANCH_NAME == 'test') {
-                
+             catch (Exception E) {
+              echo 'Failure detected'
+             }
 
-                        sh '''
-                        pwd
-                        chmod +x sample1
-                        cd sample1
-                        pwd
-                        chmod +x gradlew
-                       ./gradlew jacocoTestReport
-                       '''
-                       sh '''
-                        pwd
-                        chmod +x sample1
-                        cd sample1
-                        pwd
-                        chmod +x gradlew
-                       ./gradlew jacocoTestCoverageVerification
-                       '''
-
-                       publishHTML (target: [
+            publishHTML(target: [
                         reportDir: 'sample1/build/reports/tests/test',
                         reportFiles: 'index.html',
-                        reportName: "JaCoCo Report test and main branch"
-                    ])              
-
-                    }  else {
-                        sh "echo 'Code coverage skipped because of non main branch'"
-                    }
-                    }
-            }
+                        reportName: 'JaCoCo Report'
+                    ])
+          }
         }
-        stage('Unit test') {
-            steps {
-                script {
-                    if (env.BRANCH_NAME != 'main') {
-                        sh '''
-                        pwd
-                        chmod +x sample1
-                        cd sample1
-                        pwd
-                        chmod +x gradlew
-                       ./gradlew test
-                       '''
-                    }  else {
-                         sh "echo 'Unit test skipped because of main branch'"
-                    }
-                    }
+        stage('Code checkstyle') {
+          echo "I am the ${env.BRANCH_NAME} branch"
+          if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
+            try {
+              sh '''
+                 pwd
+                 chmod +x sample1
+                 cd sample1
+                 chmod +x gradlew
+                 ./gradlew checkstyleMain
+                 ./gradlew jacocoTestReport
+                 '''
             }
+            catch (Exception E) {
+              echo 'Failure detected'
+            }
+          }
         }
+      }
     }
+
+    stage('Build Java Image') {
+      container('kaniko') {
+        stage('Build a gradle project') {
+          if (env.BRANCH_NAME == 'master') {
+            sh '''
+          echo 'FROM openjdk:8-jre' > Dockerfile
+          echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
+          echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
+          mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
+          /kaniko/executor --context `pwd` --destination dlambrig/calculator:1.0
+          '''
+          }
+          else if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground') {
+            sh '''
+          echo 'FROM openjdk:8-jre' > Dockerfile
+          echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
+          echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
+          mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
+          /kaniko/executor --context `pwd` --destination fezal/calculator-feature:0.1
+          '''
+          }
+        }
+      }
+    }
+  }
 }
