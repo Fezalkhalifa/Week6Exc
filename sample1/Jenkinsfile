@@ -37,8 +37,20 @@ podTemplate(yaml: '''
 ''') {
   node(POD_LABEL) {
     stage('Build a gradle project') {
+     // git branch: 'master', url: 'https://github.com/Fezalkhalifa/Week6Exc.git'
       container('gradle') {
+         stage('Build a gradle project') {
+          sh '''
+           chmod +x sample1
+           cd sample1
+           pwd
+           chmod +x gradlew
+          ./gradlew build
+          mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
+          '''
+        }
         stage('Unit test') {
+           
           if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
             echo "I am the ${env.BRANCH_NAME} branch"
             try {
