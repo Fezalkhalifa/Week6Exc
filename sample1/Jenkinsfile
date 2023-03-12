@@ -37,6 +37,7 @@ podTemplate(yaml: '''
 ''') {
   node(POD_LABEL) {
     stage('Build a gradle project') {
+     git branch: 'master', url: 'https://github.com/Fezalkhalifa/Week6Exc.git'
       container('gradle') {
          stage('Build a gradle project') {
           sh '''
@@ -54,7 +55,7 @@ podTemplate(yaml: '''
             try {
               sh '''
                       pwd
-                     // chmod +x sample1
+                      chmod +x sample1
                       cd sample1
                       chmod +x gradlew
                       ./gradlew test
