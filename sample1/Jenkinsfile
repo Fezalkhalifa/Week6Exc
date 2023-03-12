@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
     triggers {
@@ -12,7 +13,10 @@ pipeline {
         stage('Code coverage') {
             steps {
                 script {
-                    if (env.BRANCH_NAME == 'main') {
+
+                    if (env.BRANCH_NAME == 'main'||env.BRANCH_NAME == 'test') {
+                
+
                         sh '''
                         pwd
                         chmod +x sample1
@@ -29,6 +33,13 @@ pipeline {
                         chmod +x gradlew
                        ./gradlew jacocoTestCoverageVerification
                        '''
+
+                       publishHTML (target: [
+                        reportDir: 'sample1/build/reports/tests/test',
+                        reportFiles: 'index.html',
+                        reportName: "JaCoCo Report test and main branch"
+                    ])              
+
                     }  else {
                         sh "echo 'Code coverage skipped because of non main branch'"
                     }
