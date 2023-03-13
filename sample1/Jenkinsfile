@@ -34,12 +34,13 @@ podTemplate(yaml: '''
             items:
             - key: .dockerconfigjson
               path: config.json
-''') {
+''')
+ {
   node(POD_LABEL) {
     stage('Build a gradle project') {
       git branch: 'master', url: 'https://github.com/Fezalkhalifa/Week6Exc.git'
       container('gradle') {
-         stage('Build a gradle project') {
+        stage('Build a gradle project') {
           sh '''
            chmod +x sample1
            cd sample1
@@ -49,8 +50,8 @@ podTemplate(yaml: '''
           mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
           '''
         }
-       if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
-        stage('Unit test') {
+        if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
+          stage('Unit test') {
             echo "I am the ${env.BRANCH_NAME} branch"
             try {
               sh '''
@@ -66,36 +67,39 @@ podTemplate(yaml: '''
             }
           }
         }
-      if (env.BRANCH_NAME == 'master') {
-        stage('Code coverage') {
-           echo "I am the ${env.BRANCH_NAME} branch" 
-           try {
+        else {
+          echo "I am the ${env.BRANCH_NAME} branch due to unmatched condition Unit test stage skipped"
+        }
+        if (env.BRANCH_NAME == 'master') {
+          stage('Code coverage') {
+            echo "I am the ${env.BRANCH_NAME} branch"
+            try {
               sh '''
-        	            pwd
+                        pwd
                         chmod +x sample1
-               		    cd sample1
-                	    ./gradlew jacocoTestCoverageVerification
+                           cd sample1
+                        ./gradlew jacocoTestCoverageVerification
                         ./gradlew jacocoTestReport
                         '''
                     } catch (Exception E) {
-                        echo 'Failure detected'
-                    }
+              echo 'Failure detected'
+            }
 
-                    // from the HTML publisher plugin
-                    // https://www.jenkins.io/doc/pipeline/steps/htmlpublisher/
-                    publishHTML (target: [
+            // from the HTML publisher plugin
+            // https://www.jenkins.io/doc/pipeline/steps/htmlpublisher/
+            publishHTML(target: [
                         reportDir: 'sample1/build/reports/tests/test',
                         reportFiles: 'index.html',
-                        reportName: "JaCoCo Report"
-                    ])                       
+                        reportName: 'JaCoCo Report'
+                    ])
           }
-            else{
-                  echo "I am the ${env.BRANCH_NAME} branch"
-                }
         }
-       if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
-        stage('Code checkstyle') {
-          echo "I am the ${env.BRANCH_NAME} branch"
+        else {
+          echo "I am the ${env.BRANCH_NAME} branch due to unmatched condition Code coverage stage skipped"
+        }
+        if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
+          stage('Code checkstyle') {
+            echo "I am the ${env.BRANCH_NAME} branch"
             try {
               sh '''
                  pwd
@@ -109,9 +113,9 @@ podTemplate(yaml: '''
             catch (Exception E) {
               echo 'Failure detected'
             }
-          }else{
-           echo "I am the ${env.BRANCH_NAME} branch"
           }
+       }else {
+          echo "I am the ${env.BRANCH_NAME} branch due to unmatched condition Code checkstyle stage skipped"
         }
       }
     }
@@ -120,7 +124,7 @@ podTemplate(yaml: '''
       container('kaniko') {
         stage('Build a gradle project') {
           if (env.BRANCH_NAME == 'master') {
-              sh '''
+            sh '''
                      echo 'FROM openjdk:8-jre' > Dockerfile
                      echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
                      echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
@@ -129,7 +133,7 @@ podTemplate(yaml: '''
                 '''
           }
           else if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground') {
-              sh '''
+            sh '''
                     echo 'FROM openjdk:8-jre' > Dockerfile
                     echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
                     echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
@@ -141,4 +145,4 @@ podTemplate(yaml: '''
       }
     }
   }
-}
+ }
