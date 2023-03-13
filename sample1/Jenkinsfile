@@ -37,7 +37,7 @@ podTemplate(yaml: '''
 ''') {
   node(POD_LABEL) {
     stage('Build a gradle project') {
-     // git branch: 'master', url: 'https://github.com/Fezalkhalifa/Week6Exc.git'
+      git branch: 'master', url: 'https://github.com/Fezalkhalifa/Week6Exc.git'
       container('gradle') {
          stage('Build a gradle project') {
           sh '''
@@ -50,7 +50,6 @@ podTemplate(yaml: '''
           '''
         }
         stage('Unit test') {
-           
           if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
             echo "I am the ${env.BRANCH_NAME} branch"
             try {
@@ -62,38 +61,41 @@ podTemplate(yaml: '''
                       ./gradlew test
                        '''
             }
-         catch (Exception E) {
+            catch (Exception E) {
               echo 'Failure detected'
-         }
+            }
           }
         }
         stage('Code coverage') {
-            echo "I am the ${env.BRANCH_NAME} branch"
           if (env.BRANCH_NAME == 'master') {
-            try {
+           echo "I am the ${env.BRANCH_NAME} branch" 
+           try {
               sh '''
-                         pwd
-                         chmod +x sample1
-                         cd sample1
-                         chmod +x gradlew
-                         ./gradlew jacocoTestCoverageVerification
-                         ./gradlew jacocoTestReport '''
-            }
+        	            pwd
+                        chmod +x sample1
+               		    cd sample1
+                	    ./gradlew jacocoTestCoverageVerification
+                        ./gradlew jacocoTestReport
+                        '''
+                    } catch (Exception E) {
+                        echo 'Failure detected'
+                    }
 
-             catch (Exception E) {
-              echo 'Failure detected'
-             }
-
-            publishHTML(target: [
+                    // from the HTML publisher plugin
+                    // https://www.jenkins.io/doc/pipeline/steps/htmlpublisher/
+                    publishHTML (target: [
                         reportDir: 'sample1/build/reports/tests/test',
                         reportFiles: 'index.html',
-                        reportName: 'JaCoCo Report'
-                    ])
+                        reportName: "JaCoCo Report"
+                    ])                       
           }
+            else{
+                  echo "I am the ${env.BRANCH_NAME} branch"
+                }
         }
         stage('Code checkstyle') {
-          echo "I am the ${env.BRANCH_NAME} branch"
           if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
+          echo "I am the ${env.BRANCH_NAME} branch"
             try {
               sh '''
                  pwd
@@ -107,6 +109,8 @@ podTemplate(yaml: '''
             catch (Exception E) {
               echo 'Failure detected'
             }
+          }else{
+           echo "I am the ${env.BRANCH_NAME} branch"
           }
         }
       }
@@ -116,22 +120,22 @@ podTemplate(yaml: '''
       container('kaniko') {
         stage('Build a gradle project') {
           if (env.BRANCH_NAME == 'master') {
-            sh '''
-          echo 'FROM openjdk:8-jre' > Dockerfile
-          echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
-          echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
-          mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
-          /kaniko/executor --context `pwd` --destination dlambrig/calculator:1.0
-          '''
+              sh '''
+                     echo 'FROM openjdk:8-jre' > Dockerfile
+                     echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
+                     echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
+                     mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
+                     /kaniko/executor --context `pwd` --destination fezal/calculator:1.0
+                '''
           }
           else if (env.BRANCH_NAME == 'feature' || env.BRANCH_NAME == 'playground') {
-            sh '''
-          echo 'FROM openjdk:8-jre' > Dockerfile
-          echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
-          echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
-          mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
-          /kaniko/executor --context `pwd` --destination fezal/calculator-feature:0.1
-          '''
+              sh '''
+                    echo 'FROM openjdk:8-jre' > Dockerfile
+                    echo 'COPY ./calculator-0.0.1-SNAPSHOT.jar app.jar' >> Dockerfile
+                    echo 'ENTRYPOINT ["java", "-jar", "app.jar"]' >> Dockerfile
+                    mv /mnt/calculator-0.0.1-SNAPSHOT.jar .
+                    /kaniko/executor --context `pwd` --destination fezal/calculator-feature:0.1
+                  '''
           }
         }
       }
