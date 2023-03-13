@@ -49,8 +49,8 @@ podTemplate(yaml: '''
           mv ./build/libs/calculator-0.0.1-SNAPSHOT.jar /mnt
           '''
         }
+       if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
         stage('Unit test') {
-          if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
             echo "I am the ${env.BRANCH_NAME} branch"
             try {
               sh '''
@@ -66,8 +66,8 @@ podTemplate(yaml: '''
             }
           }
         }
+      if (env.BRANCH_NAME == 'master') {
         stage('Code coverage') {
-          if (env.BRANCH_NAME == 'master') {
            echo "I am the ${env.BRANCH_NAME} branch" 
            try {
               sh '''
@@ -93,8 +93,8 @@ podTemplate(yaml: '''
                   echo "I am the ${env.BRANCH_NAME} branch"
                 }
         }
+       if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
         stage('Code checkstyle') {
-          if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'feature') {
           echo "I am the ${env.BRANCH_NAME} branch"
             try {
               sh '''
